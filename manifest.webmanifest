@@ -1,0 +1,14 @@
+{
+  "name": "Derived Reciprocity Moduli Lab",
+  "short_name": "Reciprocity Lab",
+  "description": "Interactive mathematical laboratory for the Derived Reciprocity Moduli Principle.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07131c",
+  "theme_color": "#07131c",
+  "orientation": "any",
+  "icons": [
+    {"src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
