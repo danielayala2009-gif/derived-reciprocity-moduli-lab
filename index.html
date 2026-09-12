@@ -26,21 +26,87 @@ footer{color:var(--muted);font-size:13px;line-height:1.5}
 <button id="installBtn" style="display:none;margin-top:12px">Install app</button></header>
 <main><div class="tabs"><button class="active" data-target="engine">Coherence Engine</button><button data-target="architecture">Architecture</button><button data-target="math">Math Rules</button><button data-target="derived">Derived Layers</button></div>
 <section id="engine" class="panel active"><div class="grid2"><div class="card"><h2>Interactive galaxy cohesion</h2><p class="muted">Displayed primes are unramified for x³−2. Base traces follow the factorization type of x³−2 mod p and the standard S₃ character.</p>
-<div class="canvaswrap"><canvas id="galaxy" width="920" height="560"></canvas></div><div class="controls" style="margin-top:12px"><label>Prime: <select id="primeSelect"></select></label><label>Automorphic trace: <select id="valueSelect"><option>2</option><option>1</option><option selected>0</option><option>-1</option><option>-2</option></select></label><button onclick="perturb()">Perturb one prime</button><button onclick="twist()">Apply global χ₋₄ twist</button><button onclick="resetAll()">Reset</button><button onclick="orbit=!orbit">Pause / orbit</button></div></div>
+<div class="canvaswrap"><canvas id="galaxy" width="920" height="560"></canvas></div><div class="controls" style="margin-top:12px"><label>Prime: <select id="primeSelect"></select></label><label>Automorphic trace: <select id="valueSelect"><option>2</option><option>1</option><option selected>0</option><option>-1</option><option>-2</option></select></label><button onclick="perturb()">Perturb one prime</button><button onclick="twist()">Apply global χ₋₄ twist</button><button onclick="resetAll()">Reset</button><button id="orbitBtn">Pause / orbit</button></div></div>
 <div class="card"><h3>Coherence diagnostics</h3><div id="statusBox" class="goodnote">Base state: every displayed local Frobenius trace matches its automorphic counterpart.</div><div class="statbox"><div class="stat"><strong id="score">100%</strong>local matching</div><div class="stat"><strong id="matched">12/12</strong>matched places</div><div class="stat"><strong id="rule">BASE</strong>global rule</div></div><div class="math" id="ruleMath">a<sub>p</sub> = tr ρ(Frob<sub>p</sub>)</div><h3>Local data</h3><div style="max-height:285px;overflow:auto"><table><thead><tr><th>p</th><th>factorization</th><th>Galois</th><th>Automorphic</th><th>χ₋₄</th><th>status</th></tr></thead><tbody id="dataBody"></tbody></table></div></div></div></section>
 <section id="architecture" class="panel"><div class="grid2"><div class="card"><h2>Conjectural architecture</h2><div class="arch"><div class="node"><b>Galois / spectral realization</b><br><span class="muted">Frobenius · deformation · Selmer</span></div><div class="node"><b>Automorphic realization</b><br><span class="muted">Hecke · cohomology · categories</span></div><div class="node center"><b>𝔅R<sub>F,G</sub></b><br>proposed reciprocity moduli architecture</div><div class="node bottom"><b>Coherent local-to-global structure</b><br><span class="muted">matching · gluing · deformation · higher compatibility</span></div></div><div class="note">The central object is conjectural. The local trace calculations and twist rule used in the sandbox are standard mathematics.</div></div><div class="card"><h3>What “coherence” means here</h3><div class="math">P<sub>p</sub>(ρ,T)=P<sub>p</sub>(π,T)</div><p>A one-prime change is displayed as a mismatch. A coordinated twist changes both realizations by the same global character, preserving cross-side matching.</p><div class="math">ρ⊗χ ↔ π⊗χ</div></div></div></section>
 <section id="math" class="panel"><div class="grid2"><div class="card"><h2>Base S₃ rule</h2><div class="math">χ<sub>std</sub>(g)=#Fix(g)−1</div><div class="tracegrid"><div class="trace"><small>split completely</small><b>2</b>identity</div><div class="trace"><small>1+2 factorization</small><b>0</b>transposition</div><div class="trace"><small>irreducible cubic</small><b>−1</b>3-cycle</div></div><p>For p not dividing 108, factorization of x³−2 mod p determines the S₃ Frobenius conjugacy class and trace.</p></div><div class="card"><h2>Global twist rule</h2><div class="math">χ<sub>−4</sub>(p)=+1 if p≡1 mod 4, −1 if p≡3 mod 4</div><div class="math">tr((ρ⊗χ)(Frob<sub>p</sub>))=χ(p)·tr(ρ(Frob<sub>p</sub>))</div><p>Applying the same twist on both sides changes local values while preserving displayed reciprocity.</p></div></div></section>
 <section id="derived" class="panel layers"><div class="grid2"><div class="card"><h2>Derived extension</h2><div class="math">π₀(𝓡)=R</div><input id="layerSlider" type="range" min="0" max="4" value="0"><div id="layerBoxes"></div></div><div class="card"><h3>Research question</h3><div class="math">higher Galois structure ↔ higher automorphic structure ?</div><p>The app does not compute a derived Langlands equivalence. It visualizes the conjectural requirement that higher information should remain compatible.</p><div class="note">This marks the boundary between established ingredients and the proposed Derived Reciprocity Moduli Principle.</div></div></div></section>
 </main><footer><b>Important:</b> the coherence score measures displayed local equality only. It is not a proof that a modified list of local values comes from a genuine global representation. The global-twist mode is mathematically motivated; the galaxy geometry is illustrative.</footer>
 <script>
-const tabs=document.querySelectorAll('.tabs button'),panels=document.querySelectorAll('.panel');tabs.forEach(b=>b.onclick=()=>{tabs.forEach(x=>x.classList.remove('active'));panels.forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.target).classList.add('active')});
+const tabs=document.querySelectorAll('.tabs button');
+const panels=document.querySelectorAll('.panel');
+tabs.forEach(b=>b.addEventListener('click',()=>{
+  tabs.forEach(x=>x.classList.remove('active'));
+  panels.forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const target=document.getElementById(b.dataset.target);
+  if(target) target.classList.add('active');
+}));
+const scoreEl=document.getElementById('score');
+const matchedEl=document.getElementById('matched');
+const ruleEl=document.getElementById('rule');
+const dataBodyEl=document.getElementById('dataBody');
+const statusBoxEl=document.getElementById('statusBox');
+const ruleMathEl=document.getElementById('ruleMath');
+const valueSelectEl=document.getElementById('valueSelect');
+const layerSliderEl=document.getElementById('layerSlider');
+const layerBoxesEl=document.getElementById('layerBoxes');
+const installBtnEl=document.getElementById('installBtn');
 const base=[{p:5,type:'1+2',tr:0},{p:7,type:'irreducible',tr:-1},{p:11,type:'1+2',tr:0},{p:13,type:'irreducible',tr:-1},{p:17,type:'1+2',tr:0},{p:19,type:'irreducible',tr:-1},{p:23,type:'1+2',tr:0},{p:29,type:'1+2',tr:0},{p:31,type:'1+1+1',tr:2},{p:37,type:'irreducible',tr:-1},{p:41,type:'1+2',tr:0},{p:43,type:'1+1+1',tr:2}];
 let gal=base.map(x=>x.tr),aut=base.map(x=>x.tr),mode='BASE',orbit=true,time=0;const chi4=p=>p%4===1?1:-1;
 const ps=document.getElementById('primeSelect');base.forEach((d,i)=>{let o=document.createElement('option');o.value=i;o.textContent='p = '+d.p;ps.appendChild(o)});
-function update(){let m=gal.map((x,i)=>x===aut[i]),count=m.filter(Boolean).length;score.textContent=Math.round(100*count/base.length)+'%';matched.textContent=count+'/'+base.length;rule.textContent=mode;dataBody.innerHTML=base.map((d,i)=>'<tr><td>'+d.p+'</td><td>'+d.type+'</td><td>'+gal[i]+'</td><td>'+aut[i]+'</td><td>'+(chi4(d.p)>0?'+1':'−1')+'</td><td class="'+(m[i]?'goodcell':'badcell')+'">'+(m[i]?'match':'mismatch')+'</td></tr>').join('');if(count===base.length&&mode==='TWIST'){statusBox.className='goodnote';statusBox.innerHTML='<b>Globally coordinated transformation:</b> both sides were twisted by the same quadratic character; all displayed correspondences remain matched.';ruleMath.innerHTML='a′<sub>p</sub>=χ<sub>−4</sub>(p)a<sub>p</sub>'}else if(count===base.length){statusBox.className='goodnote';statusBox.innerHTML='<b>Coherent displayed state:</b> every listed local Frobenius trace equals its automorphic counterpart.';ruleMath.innerHTML='a<sub>p</sub>=tr ρ(Frob<sub>p</sub>)'}else{statusBox.className='badnote';statusBox.innerHTML='<b>Displayed compatibility broken:</b> at least one manually changed local value no longer matches.';ruleMath.innerHTML='∃ q : a<sub>q</sub> ≠ tr ρ(Frob<sub>q</sub>)'}}
-function perturb(){aut[+ps.value]=+valueSelect.value;mode='LOCAL BREAK';update()}function twist(){gal=base.map(d=>chi4(d.p)*d.tr);aut=base.map(d=>chi4(d.p)*d.tr);mode='TWIST';update()}function resetAll(){gal=base.map(x=>x.tr);aut=base.map(x=>x.tr);mode='BASE';update()}
+function update(){
+  const m=gal.map((x,i)=>x===aut[i]);
+  const count=m.filter(Boolean).length;
+  scoreEl.textContent=Math.round(100*count/base.length)+'%';
+  matchedEl.textContent=count+'/'+base.length;
+  ruleEl.textContent=mode;
+  dataBodyEl.innerHTML=base.map((d,i)=>'<tr><td>'+d.p+'</td><td>'+d.type+'</td><td>'+gal[i]+'</td><td>'+aut[i]+'</td><td>'+(chi4(d.p)>0?'+1':'−1')+'</td><td class="'+(m[i]?'goodcell':'badcell')+'">'+(m[i]?'match':'mismatch')+'</td></tr>').join('');
+  if(count===base.length&&mode==='TWIST'){
+    statusBoxEl.className='goodnote';
+    statusBoxEl.innerHTML='<b>Globally coordinated transformation:</b> both sides were twisted by the same quadratic character; all displayed correspondences remain matched.';
+    ruleMathEl.innerHTML='a′<sub>p</sub>=χ<sub>−4</sub>(p)a<sub>p</sub>';
+  }else if(count===base.length){
+    statusBoxEl.className='goodnote';
+    statusBoxEl.innerHTML='<b>Coherent displayed state:</b> every listed local Frobenius trace equals its automorphic counterpart.';
+    ruleMathEl.innerHTML='a<sub>p</sub>=tr ρ(Frob<sub>p</sub>)';
+  }else{
+    statusBoxEl.className='badnote';
+    statusBoxEl.innerHTML='<b>Displayed compatibility broken:</b> at least one manually changed local value no longer matches.';
+    ruleMathEl.innerHTML='∃ q : a<sub>q</sub> ≠ tr ρ(Frob<sub>q</sub>)';
+  }
+}
+function perturb(){aut[+ps.value]=+valueSelectEl.value;mode='LOCAL BREAK';update()}
+function twist(){gal=base.map(d=>chi4(d.p)*d.tr);aut=base.map(d=>chi4(d.p)*d.tr);mode='TWIST';update()}
+function resetAll(){gal=base.map(x=>x.tr);aut=base.map(x=>x.tr);mode='BASE';update()}
+const orbitBtnEl=document.getElementById('orbitBtn'); if(orbitBtnEl) orbitBtnEl.addEventListener('click',()=>{orbit=!orbit;});
 const c=document.getElementById('galaxy'),ctx=c.getContext('2d');const pt=(cx,cy,r,a)=>[cx+Math.cos(a)*r,cy+Math.sin(a)*r*.7];function star(x,y,r,color,blur=0){ctx.save();ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=blur;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore()}
 function draw(){ctx.clearRect(0,0,c.width,c.height);for(let i=0;i<110;i++){ctx.globalAlpha=.1+(i%5)*.035;star((i*83)%920,(i*137)%560,1+(i%3)*.25,'#dff7ff')}ctx.globalAlpha=1;const L=[250,275],R=[670,275],C=[460,275];let gl=ctx.createRadialGradient(...L,5,...L,180);gl.addColorStop(0,'rgba(119,219,255,.26)');gl.addColorStop(1,'rgba(119,219,255,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(...L,180,0,Math.PI*2);ctx.fill();let gr=ctx.createRadialGradient(...R,5,...R,180);gr.addColorStop(0,'rgba(140,228,180,.26)');gr.addColorStop(1,'rgba(140,228,180,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(...R,180,0,Math.PI*2);ctx.fill();star(...C,25,'#ffd37b',25);ctx.fillStyle='#fff4c9';ctx.textAlign='center';ctx.font='700 15px system-ui';ctx.fillText('𝔅R',C[0],C[1]+5);const LP=[],RP=[];base.forEach((d,i)=>{let rr=62+(i%4)*28,a=i/base.length*Math.PI*2+(orbit?time*(.15+(i%3)*.025):0);LP.push(pt(...L,rr,a));RP.push(pt(...R,rr,-a+Math.PI))});base.forEach((d,i)=>{let ok=gal[i]===aut[i];ctx.strokeStyle=ok?'rgba(115,207,234,.28)':'rgba(255,113,133,.95)';ctx.lineWidth=ok?1:3;ctx.beginPath();ctx.moveTo(...LP[i]);ctx.quadraticCurveTo(...C,...RP[i]);ctx.stroke()});base.forEach((d,i)=>{let ok=gal[i]===aut[i],tw=mode==='TWIST'&&chi4(d.p)<0;star(...LP[i],ok?5:7,ok?(tw?'#c4b6ff':'#77dbff'):'#ff7185',ok?8:18);star(...RP[i],ok?5:7,ok?(tw?'#c4b6ff':'#8ce4b4'):'#ff7185',ok?8:18)});ctx.font='700 18px system-ui';ctx.textAlign='center';ctx.fillStyle='#77dbff';ctx.fillText('Galois galaxy',250,40);ctx.fillStyle='#8ce4b4';ctx.fillText('Automorphic galaxy',670,40);time+=.016;requestAnimationFrame(draw)}update();draw();
-layerSlider.oninput=()=>{let h='';for(let i=0;i<=+layerSlider.value;i++)h+='<div class="math">π'+i+'(𝓡) '+(i===0?'= classical deformation ring':'= higher derived layer')+'</div>';layerBoxes.innerHTML=h};layerSlider.oninput();
-let deferredPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.style.display='inline-block'});installBtn.onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;installBtn.style.display='none'};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+function renderLayers(){
+  let h='';
+  for(let i=0;i<=+layerSliderEl.value;i++){
+    h+='<div class="math">π'+i+'(𝓡) '+(i===0?'= classical deformation ring':'= higher derived layer')+'</div>';
+  }
+  layerBoxesEl.innerHTML=h;
+}
+layerSliderEl.addEventListener('input',renderLayers);
+renderLayers();
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  if(installBtnEl) installBtnEl.style.display='inline-block';
+});
+if(installBtnEl){
+  installBtnEl.addEventListener('click',async()=>{
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    installBtnEl.style.display='none';
+  });
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=2'));
+}
 </script></body></html>
